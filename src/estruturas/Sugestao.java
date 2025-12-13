@@ -28,6 +28,9 @@ public class Sugestao {
 
             for (String prefixoAntigo : prefixosAtivos) {
                 for (char vizinho : vizinhos) {
+                    if (novosPrefixos.size() > 1000) { 
+                        break;
+                    }
                     novosPrefixos.add(prefixoAntigo + vizinho);
                 }
             }
