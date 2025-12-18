@@ -13,7 +13,7 @@ import java.util.ArrayList;
 
 public class Eda {
     public static void main(String[] args) {
-        System.out.println("A carregar dicionário...");
+        System.out.println("A carregar dicionario...");
         
         // 1. Preparar os dados (Backend)
         Dicionario dic = new Dicionario();

@@ -9,8 +9,8 @@ import estruturas.Palavra;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.List;
 public class Janela extends JFrame {
 
     private Sugestao motor;
-    private JTextField visor; // O ecrã onde aparece o texto
+    private JTextField visor;
     private DefaultListModel<String> modeloLista;
     private JList<String> listaSugestoes;
 
@@ -28,132 +28,150 @@ public class Janela extends JFrame {
     }
 
     private void inicializarComponentes() {
-        setTitle("Smartphone EDA - Simulador");
-        setSize(400, 650); // Formato mais alto, tipo telemóvel
+        // 1. CORREÇÃO DE TAMANHO: Aumentei a largura para 600px para caberem as teclas todas
+        setTitle("Teclado Inteligente");
+        setSize(600, 700); 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
-        getContentPane().setBackground(new Color(50, 50, 50)); // Fundo cinza escuro
-
-        // --- PAINEL SUPERIOR (Visor + Sugestões) ---
-        JPanel painelSuperior = new JPanel(new BorderLayout(5, 5));
-        painelSuperior.setOpaque(false);
-        painelSuperior.setBorder(new EmptyBorder(20, 15, 10, 15));
-
-        // 1. Visor de Texto
-        visor = new JTextField();
-        visor.setFont(new Font("SansSerif", Font.PLAIN, 28));
-        visor.setHorizontalAlignment(JTextField.LEFT);
-        visor.setBackground(new Color(230, 230, 230));
-        visor.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(100, 100, 100), 2),
-                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         
-        // Permite escrever com o teclado físico também
+        // Centralizar a janela no ecrã
+        setLocationRelativeTo(null); 
+
+        // --- PARTE DE CIMA: Visor e Sugestões ---
+        JPanel painelCima = new JPanel(new BorderLayout(5, 5));
+        painelCima.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        // Visor
+        visor = new JTextField();
+        visor.setFont(new Font("Arial", Font.PLAIN, 28));
         visor.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
                 atualizarSugestoes();
             }
         });
+        painelCima.add(visor, BorderLayout.NORTH);
 
-        painelSuperior.add(visor, BorderLayout.NORTH);
-
-        // 2. Lista de Sugestões (Estilo "Barra de Sugestões")
+        // Lista de Sugestões
         modeloLista = new DefaultListModel<>();
         listaSugestoes = new JList<>(modeloLista);
-        listaSugestoes.setFont(new Font("SansSerif", Font.BOLD, 16));
-        listaSugestoes.setBackground(new Color(220, 240, 255)); // Azul clarinho
-        listaSugestoes.setVisibleRowCount(4); // Mostra 4 linhas de sugestões
+        listaSugestoes.setFont(new Font("Arial", Font.BOLD, 18));
+        listaSugestoes.setVisibleRowCount(5);
         
-        // Colocar num ScrollPane
-        JScrollPane scrollSugestoes = new JScrollPane(listaSugestoes);
-        scrollSugestoes.setPreferredSize(new Dimension(300, 100));
-        painelSuperior.add(scrollSugestoes, BorderLayout.CENTER);
+        // Evento de clique na sugestão
+        listaSugestoes.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 1) { 
+                    completarPalavra();
+                }
+            }
+        });
 
-        add(painelSuperior, BorderLayout.NORTH);
+        painelCima.add(new JScrollPane(listaSugestoes), BorderLayout.CENTER);
+        add(painelCima, BorderLayout.CENTER);
 
-        // --- PAINEL DO TECLADO VIRTUAL ---
-        JPanel painelTeclado = new JPanel();
-        painelTeclado.setLayout(new GridLayout(4, 1, 5, 5)); // 4 linhas de teclas
-        painelTeclado.setOpaque(false);
-        painelTeclado.setBorder(new EmptyBorder(10, 15, 20, 15));
+        // --- PARTE DE BAIXO: Teclado Virtual ---
+        // GridLayout para organizar as 4 linhas
+        JPanel painelTeclado = new JPanel(new GridLayout(4, 1, 5, 5));
+        painelTeclado.setBorder(new EmptyBorder(10, 10, 20, 10));
 
-        // Definição das linhas do teclado QWERTY
         String[] linha1 = {"q", "w", "e", "r", "t", "y", "u", "i", "o", "p"};
         String[] linha2 = {"a", "s", "d", "f", "g", "h", "j", "k", "l"};
         String[] linha3 = {"z", "x", "c", "v", "b", "n", "m"};
-        String[] linha4 = {"SPACE", "DEL"}; // Teclas especiais
+        String[] linha4 = {"SPACE", "DEL"}; 
 
-        painelTeclado.add(criarLinhaTeclas(linha1));
-        painelTeclado.add(criarLinhaTeclas(linha2));
-        painelTeclado.add(criarLinhaTeclas(linha3));
-        painelTeclado.add(criarLinhaTeclas(linha4));
+        painelTeclado.add(criarLinha(linha1));
+        painelTeclado.add(criarLinha(linha2));
+        painelTeclado.add(criarLinha(linha3));
+        painelTeclado.add(criarLinha(linha4));
 
-        add(painelTeclado, BorderLayout.CENTER);
+        add(painelTeclado, BorderLayout.SOUTH);
     }
 
-    // Método auxiliar para criar uma linha de botões
-    private JPanel criarLinhaTeclas(String[] teclas) {
-        JPanel painel = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 4));
-        painel.setOpaque(false);
-
+    private JPanel criarLinha(String[] teclas) {
+        JPanel painel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
         for (String letra : teclas) {
             JButton botao = new JButton(letra.toUpperCase());
-            botao.setFont(new Font("Arial", Font.BOLD, 14));
-            botao.setFocusable(false); // Para não roubar o foco do visor
             
-            // Estilo do botão
-            botao.setBackground(new Color(245, 245, 245));
-            botao.setPreferredSize(new Dimension(letra.length() > 1 ? 80 : 45, 40)); // Botões maiores para SPACE/DEL
+            // CORREÇÃO: Botões ligeiramente mais pequenos para garantir que cabem
+            if (letra.length() > 1) {
+                botao.setPreferredSize(new Dimension(100, 45)); // Espaço e Del maiores
+            } else {
+                botao.setPreferredSize(new Dimension(45, 45)); // Letras quadradas
+            }
+            
+            botao.setFont(new Font("Arial", Font.BOLD, 14));
+            botao.setFocusable(false); // Importante: não rouba o cursor do texto
 
-            // Ação ao clicar
-            botao.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    processarClique(letra);
-                }
+            botao.addActionListener(e -> {
+                processarBotao(letra);
+                visor.requestFocusInWindow(); // Mantém o cursor a piscar no texto
             });
             painel.add(botao);
         }
         return painel;
     }
 
-    // Lógica quando clicas num botão do ecrã
-    private void processarClique(String letra) {
-        String textoAtual = visor.getText();
-
+    private void processarBotao(String letra) {
+        String texto = visor.getText();
         if (letra.equals("DEL")) {
-            if (textoAtual.length() > 0) {
-                visor.setText(textoAtual.substring(0, textoAtual.length() - 1));
-            }
+            if (texto.length() > 0) visor.setText(texto.substring(0, texto.length() - 1));
         } else if (letra.equals("SPACE")) {
-            visor.setText(textoAtual + " ");
+            visor.setText(texto + " ");
         } else {
-            visor.setText(textoAtual + letra);
+            visor.setText(texto + letra);
         }
         atualizarSugestoes();
     }
 
-    // O teu motor de sugestão entra aqui
     private void atualizarSugestoes() {
         String texto = visor.getText();
         
-        // Pega na última palavra que está a ser escrita (depois do último espaço)
-        String[] palavras = texto.split(" ");
-        String ultimaPalavra = "";
-        if (texto.length() > 0 && !texto.endsWith(" ")) {
-            ultimaPalavra = palavras[palavras.length - 1];
+        // Se o texto estiver vazio ou terminar com espaço, não sugerimos nada
+        if (texto.isEmpty() || texto.endsWith(" ")) {
+            modeloLista.clear();
+            return;
         }
 
-        modeloLista.clear();
+        // Pega na última palavra
+        String[] partes = texto.split(" ");
+        String ultimaPalavra = "";
+        if (partes.length > 0) {
+            ultimaPalavra = partes[partes.length - 1];
+        }
 
+        // Se a última palavra for vazia, sai
         if (ultimaPalavra.isEmpty()) return;
 
-        // Chama o motor inteligente
-        List<Palavra> sugestoes = motor.sugerir(ultimaPalavra);
+        // Debug para veres na consola se está a chamar o motor
+        System.out.println("A procurar sugestões para: '" + ultimaPalavra + "'");
 
+        List<Palavra> sugestoes = motor.sugerir(ultimaPalavra);
+        
+        modeloLista.clear();
         for (Palavra p : sugestoes) {
-            modeloLista.addElement(p.toString());
+            modeloLista.addElement(p.getTermo());
         }
+    }
+
+    private void completarPalavra() {
+        String escolhida = listaSugestoes.getSelectedValue();
+        if (escolhida == null) return;
+
+        String textoAtual = visor.getText();
+        int ultimoEspaco = textoAtual.lastIndexOf(" ");
+        
+        String novoTexto;
+        if (ultimoEspaco == -1) {
+            novoTexto = escolhida + " ";
+        } else {
+            String inicio = textoAtual.substring(0, ultimoEspaco + 1);
+            novoTexto = inicio + escolhida + " ";
+        }
+
+        visor.setText(novoTexto);
+        modeloLista.clear();
+        visor.requestFocusInWindow();
     }
 }
