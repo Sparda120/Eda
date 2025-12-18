@@ -58,7 +58,7 @@ public class Sugestao {
                     }
                     
                     // Otimização: Não buscar demasiadas palavras por prefixo
-                    if (i > index + 5) break; 
+                    if (i > index + 200) break; 
                 }
             }
         }

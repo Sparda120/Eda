@@ -98,7 +98,7 @@ public class Janela extends JFrame {
             if (letra.length() > 1) {
                 botao.setPreferredSize(new Dimension(100, 45)); // Espaço e Del maiores
             } else {
-                botao.setPreferredSize(new Dimension(45, 45)); // Letras quadradas
+                botao.setPreferredSize(new Dimension(50, 45)); // Letras quadradas
             }
             
             botao.setFont(new Font("Arial", Font.BOLD, 14));
@@ -145,7 +145,7 @@ public class Janela extends JFrame {
         if (ultimaPalavra.isEmpty()) return;
 
         // Debug para veres na consola se está a chamar o motor
-        System.out.println("A procurar sugestões para: '" + ultimaPalavra + "'");
+        System.out.println("A procurar sugestoes para: '" + ultimaPalavra + "'");
 
         List<Palavra> sugestoes = motor.sugerir(ultimaPalavra);
         
