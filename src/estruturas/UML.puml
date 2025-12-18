@@ -1,0 +1,57 @@
+@startuml
+class Main {
+  + main(args: String[])
+}
+
+class Janela {
+  - motor: Sugestao
+  - visor: JTextField
+  - modeloLista: DefaultListModel
+  + Janela(motor: Sugestao)
+  - inicializarComponentes()
+  - atualizarSugestoes()
+  - completarPalavra()
+}
+
+class Sugestao {
+  - dicionario: Dicionario
+  + Sugestao(dic: Dicionario)
+  + sugerir(input: String): List<Palavra>
+}
+
+class Dicionario {
+  - listaOrdenada: ArrayList<Palavra>
+  + carregarDoFicheiro(caminho: String)
+  + encontrarInicio(prefixo: String): int
+  + getLista(): ArrayList<Palavra>
+}
+
+class BST {
+  - root: No
+  + inserir(termo: String)
+  + preencherLista(lista: ArrayList)
+  - inserirRec()
+  - inOrder()
+}
+
+class Palavra {
+  - termo: String
+  - frequencia: int
+  + incrementarFreq()
+  + compareTo(outra: Palavra): int
+}
+
+class Teclado {
+  {static} - vizinhos: Map
+  {static} + getVizinhos(c: char): char[]
+}
+
+Main ..> Janela : cria >
+Main ..> Dicionario : cria >
+Janela --> Sugestao : usa >
+Sugestao --> Dicionario : consulta >
+Sugestao ..> Teclado : usa >
+Dicionario *-- BST : usa temporariamente >
+Dicionario o-- Palavra : contém lista >
+BST o-- Palavra : armazena >
+@enduml
