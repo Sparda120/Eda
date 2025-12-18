@@ -15,18 +15,52 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.List;
 
+/**
+ * Interface Gráfica do Utilizador (GUI) principal da aplicação.
+ * <p>
+ * Esta classe estende {@code JFrame} e constrói a janela visual onde o utilizador
+ * pode interagir com o teclado virtual e ver as sugestões em tempo real.
+ * Faz a ponte entre a interação visual e o motor de sugestões (backend).
+ * </p>
+ *
+ * @author Jose Lopes
+ * @version 1.0
+ */
 public class Janela extends JFrame {
 
+    /** Referência para o motor de lógica que fornece as sugestões. */
     private Sugestao motor;
+    
+    /** Campo de texto onde o utilizador escreve (visor). */
     private JTextField visor;
+    
+    /** Modelo de dados para a lista visual (necessário para adicionar/remover itens dinamicamente). */
     private DefaultListModel<String> modeloLista;
+    
+    /** Componente visual que exibe a lista de palavras sugeridas. */
     private JList<String> listaSugestoes;
 
+    /**
+     * Construtor da Janela.
+     * Recebe o motor de sugestões já inicializado para poder comunicar com o dicionário.
+     *
+     * @param motor A instância da classe {@code Sugestao}.
+     */
     public Janela(Sugestao motor) {
         this.motor = motor;
         inicializarComponentes();
     }
 
+    /**
+     * Configura todos os componentes visuais da janela.
+     * <p>
+     * Divide a janela em duas áreas principais:
+     * <ul>
+     * <li><b>Norte/Centro:</b> O visor de texto e a lista de sugestões.</li>
+     * <li><b>Sul:</b> O teclado virtual organizado em grelha.</li>
+     * </ul>
+     * </p>
+     */
     private void inicializarComponentes() {
         // 1. CORREÇÃO DE TAMANHO: Aumentei a largura para 600px para caberem as teclas todas
         setTitle("Teclado Inteligente");
@@ -44,6 +78,8 @@ public class Janela extends JFrame {
         // Visor
         visor = new JTextField();
         visor.setFont(new Font("Arial", Font.PLAIN, 28));
+        
+        // Adiciona um listener para detetar quando o utilizador escreve com o teclado físico
         visor.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -89,12 +125,18 @@ public class Janela extends JFrame {
         add(painelTeclado, BorderLayout.SOUTH);
     }
 
+    /**
+     * Método auxiliar que cria um painel horizontal com botões para uma linha de teclas.
+     *
+     * @param teclas Um array de Strings com as letras/símbolos dessa linha.
+     * @return Um JPanel contendo os botões gerados.
+     */
     private JPanel criarLinha(String[] teclas) {
         JPanel painel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
         for (String letra : teclas) {
             JButton botao = new JButton(letra.toUpperCase());
             
-            // CORREÇÃO: Botões ligeiramente mais pequenos para garantir que cabem
+            // Botões ligeiramente mais pequenos para garantir que cabem
             if (letra.length() > 1) {
                 botao.setPreferredSize(new Dimension(100, 45)); // Espaço e Del maiores
             } else {
@@ -102,7 +144,7 @@ public class Janela extends JFrame {
             }
             
             botao.setFont(new Font("Arial", Font.BOLD, 14));
-            botao.setFocusable(false); // Importante: não rouba o cursor do texto
+            botao.setFocusable(false); // Importante: não rouba o foco do cursor do texto
 
             botao.addActionListener(e -> {
                 processarBotao(letra);
@@ -113,6 +155,12 @@ public class Janela extends JFrame {
         return painel;
     }
 
+    /**
+     * Processa a lógica quando um botão do teclado virtual é pressionado.
+     * Lida com inserção de caracteres, espaço e apagamento (DEL).
+     *
+     * @param letra A string associada ao botão clicado.
+     */
     private void processarBotao(String letra) {
         String texto = visor.getText();
         if (letra.equals("DEL")) {
@@ -125,6 +173,15 @@ public class Janela extends JFrame {
         atualizarSugestoes();
     }
 
+    /**
+     * Comunica com o motor de sugestão.
+     * <p>
+     * 1. Obtém o texto do visor.<br>
+     * 2. Isola a última palavra (aquela que está a ser escrita).<br>
+     * 3. Pede ao motor uma lista de sugestões.<br>
+     * 4. Atualiza a JList visual.
+     * </p>
+     */
     private void atualizarSugestoes() {
         String texto = visor.getText();
         
@@ -144,7 +201,7 @@ public class Janela extends JFrame {
         // Se a última palavra for vazia, sai
         if (ultimaPalavra.isEmpty()) return;
 
-        // Debug para veres na consola se está a chamar o motor
+        // Debug na consola
         System.out.println("A procurar sugestoes para: '" + ultimaPalavra + "'");
 
         List<Palavra> sugestoes = motor.sugerir(ultimaPalavra);
@@ -155,6 +212,10 @@ public class Janela extends JFrame {
         }
     }
 
+    /**
+     * Substitui a palavra incompleta no visor pela palavra selecionada na lista de sugestões.
+     * Preserva o texto anterior à palavra atual.
+     */
     private void completarPalavra() {
         String escolhida = listaSugestoes.getSelectedValue();
         if (escolhida == null) return;
@@ -164,8 +225,10 @@ public class Janela extends JFrame {
         
         String novoTexto;
         if (ultimoEspaco == -1) {
+            // É a primeira palavra
             novoTexto = escolhida + " ";
         } else {
+            // Preserva o início da frase e troca só a última parte
             String inicio = textoAtual.substring(0, ultimoEspaco + 1);
             novoTexto = inicio + escolhida + " ";
         }

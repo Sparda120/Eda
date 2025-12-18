@@ -7,11 +7,30 @@ package estruturas;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Representa a disposição física de um teclado QWERTY.
+ * <p>
+ * Esta classe é utilizada para simular "erros de digitação" ou encontrar
+ * teclas próximas. É fundamental para o algoritmo de sugestão, permitindo
+ * identificar que se o utilizador digitou 's', poderia estar a tentar digitar
+ * 'a', 'w', 'e', 'd', 'z' ou 'x'.
+ * </p>
+ *
+ * @author Jose Lopes
+ * @version 1.0
+ */
 public class Teclado {
     
-    // Mapa: Letra -> Lista de Vizinhos
+    /** * Mapeamento estático de cada tecla para a sua lista de vizinhos.
+     * A chave é o caracter central e o valor é um array com os adjacentes.
+     */
     private static final Map<Character, char[]> vizinhos = new HashMap<>();
 
+    /*
+     * Bloco estático de inicialização.
+     * Executado apenas uma vez quando a classe é carregada em memória.
+     * Define as relações de vizinhança para letras minúsculas.
+     */
     static {
         // Linha de cima
         vizinhos.put('q', new char[]{'q', 'w', 'a'});
@@ -46,6 +65,18 @@ public class Teclado {
         vizinhos.put('m', new char[]{'m', 'n', 'j', 'k'});
     }
 
+    /**
+     * Obtém a lista de teclas vizinhas a um determinado caracter.
+     * <p>
+     * Nota: O array retornado inclui o próprio caracter passado como argumento,
+     * para garantir que a letra original também é considerada nas sugestões.
+     * </p>
+     *
+     * @param c O caracter para o qual queremos encontrar os vizinhos.
+     * @return Um array de char contendo a própria letra e as suas adjacentes no teclado.
+     * Se a letra não estiver mapeada (ex: 'ç', '1' ou símbolos), retorna um array
+     * apenas com o próprio caracter.
+     */
     public static char[] getVizinhos(char c) {
         // Se a letra não estiver no mapa (ex: 'ç' ou '1'), devolve ela própria
         if (!vizinhos.containsKey(c)) {
